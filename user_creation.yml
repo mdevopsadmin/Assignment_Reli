@@ -1,0 +1,39 @@
+---
+
+- hosts: apache
+  sudo: yes
+  vars:
+    password: $2b$10$iw8xVLc42IIb22yWP5jvbOR4Rbw0lrmgGV7dSTGE3tFnE16yfb20q
+  tasks:
+
+   - name: Add the user 'monitor' and set the password using hashing
+     user:
+       name: monitor     
+       password: "{{password}}"
+
+   - name: Create directory , set the ownership to monitor and setting up the permission to 755
+
+     file:
+       path: /opt/script
+       state: directory
+       mode: "0755"
+       owner: monitor
+       group: monitor
+
+   - name: copying processcheck.sh into /opt/script
+     
+     copy:
+
+       src: ./processcheck.sh
+       dest: /opt/script      
+     
+   - name: Cronjob to schedule shell script every 2 minute
+
+     cron:
+       minute: "2" 
+       hour: "*"
+       day: "*"
+       month: "*"
+       weekday: "1-5"
+       job: "sh /opt/script/processcheck.sh"
+       user: root
